@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:to_do_app/core/commons/commons.dart';
@@ -38,17 +39,17 @@ class OnBoardingScreens extends StatelessWidget {
                             },
                           ),
                         )
-                      : const SizedBox(
-                          height: 54,
+                      : SizedBox(
+                          height: 54.h,
                         ),
-                  const SizedBox(
-                    height: 15,
+                  SizedBox(
+                    height: 15.h,
                   ),
                   //onBoarding1 image
                   SvgPicture.asset(
                       OnBoardingModel.onBoardingSceens[index].imgPath),
-                  const SizedBox(
-                    height: 16,
+                  SizedBox(
+                    height: 16.h,
                   ),
                   //dots
                   SmoothPageIndicator(
@@ -60,8 +61,8 @@ class OnBoardingScreens extends StatelessWidget {
                       dotHeight: 8,
                     ),
                   ),
-                  const SizedBox(
-                    height: 50,
+                  SizedBox(
+                    height: 50.h,
                   ),
 
                   //title
@@ -69,8 +70,8 @@ class OnBoardingScreens extends StatelessWidget {
                     OnBoardingModel.onBoardingSceens[index].title,
                     style: Theme.of(context).textTheme.displayLarge,
                   ),
-                  const SizedBox(
-                    height: 42,
+                  SizedBox(
+                    height: 20.h,
                   ),
 
                   //subTitle
@@ -79,8 +80,8 @@ class OnBoardingScreens extends StatelessWidget {
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.displayMedium,
                   ),
-                  const SizedBox(
-                    height: 107,
+                  SizedBox(
+                    height: 85.h,
                   ),
                   //buttons
                   Row(
