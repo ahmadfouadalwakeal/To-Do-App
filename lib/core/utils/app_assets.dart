@@ -1,5 +1,5 @@
 class AppAssets {
-  static const String basePath = 'assets/images/svg/';
+  static const String basePath = 'assets/images/';
   static const String logo = '${basePath}app_logo.svg';
   static const String on1 = '${basePath}on1.svg';
   static const String on2 = '${basePath}on2.svg';

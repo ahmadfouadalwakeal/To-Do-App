@@ -1,5 +1,6 @@
 import 'package:date_picker_timeline/date_picker_timeline.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
@@ -9,6 +10,8 @@ import 'package:to_do_app/core/utils/app_colors.dart';
 import 'package:to_do_app/core/utils/app_strings.dart';
 import 'package:to_do_app/core/widgets/custom_button.dart';
 import 'package:to_do_app/features/tasks/data/model/task_model.dart';
+import 'package:to_do_app/features/tasks/presentation/cubit/cubit/task_cubit.dart';
+import 'package:to_do_app/features/tasks/presentation/cubit/cubit/task_state.dart';
 import 'package:to_do_app/features/tasks/presentation/screens/add_task_screen/add_task_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -20,108 +23,171 @@ class HomeScreen extends StatelessWidget {
       child: Scaffold(
         body: Padding(
           padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              //date now
-              Text(
-                DateFormat.yMMMMd().format(DateTime.now()),
-                style: Theme.of(context).textTheme.displayLarge,
-              ),
-              SizedBox(
-                height: 12.h,
-              ),
-              //today
-              Text(
-                AppStrings.today,
-                style: Theme.of(context).textTheme.displayLarge,
-              ),
-              SizedBox(
-                height: 6.h,
-              ),
-              //date picker
-              DatePicker(
-                DateTime.now(),
-                initialSelectedDate: DateTime.now(),
-                selectionColor: AppColors.primary,
-                selectedTextColor: AppColors.white,
-                dateTextStyle: Theme.of(context).textTheme.displayMedium!,
-                monthTextStyle: Theme.of(context).textTheme.displayMedium!,
-                dayTextStyle: Theme.of(context).textTheme.displayMedium!,
-                height: 110,
-                onDateChange: (date) {
-                  // New date selected
-                  // setState(() {
-                  //   _selectedValue = date;
-                  // });
-                },
-              ),
-              SizedBox(
-                height: 50.h,
-              ),
-              //no tasks
-              TaskModel.tasksList.isEmpty
-                  ? NoTasksWidgets()
-                  : Expanded(
-                      child: ListView.builder(
-                        itemCount: TaskModel.tasksList.length,
-                        itemBuilder: (context, index) {
-                          return InkWell(
-                            onTap: () {
-                              showModalBottomSheet(
-                                  context: context,
-                                  builder: (context) {
-                                    return Container(
-                                      padding: const EdgeInsets.all(24),
-                                      height: 250.h,
-                                      color: AppColors.deepGrey,
-                                      child: Column(
-                                        children: [
-                                          //taskCompleted
-                                          SizedBox(
-                                            height: 48.h,
-                                            width: double.infinity,
-                                            child: CustomButton(
-                                                onPressed: () {},
-                                                text: AppStrings.taskCompleted),
-                                          ),
-                                          SizedBox(
-                                            height: 24.h,
-                                          ),
-                                          //deleteTask
-                                          SizedBox(
-                                            height: 48.h,
-                                            width: double.infinity,
-                                            child: CustomButton(
-                                                backgroundColor: AppColors.red,
-                                                onPressed: () {},
-                                                text: AppStrings.deleteTask),
-                                          ),
-                                          SizedBox(
-                                            height: 24.h,
-                                          ),
-
-                                          //cancel
-                                          SizedBox(
-                                            height: 48.h,
-                                            width: double.infinity,
-                                            child: CustomButton(
-                                                onPressed: () {},
-                                                text: AppStrings.cancel),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  });
-                            },
-                            child: TaskComponent(
-                              taskModel: TaskModel.tasksList[index],
-                            ),
-                          );
-                        },
+          child: BlocConsumer<TaskCubit, TaskState>(
+            listener: (context, state) {
+              if (state is UpdateTaskSuccessState) {
+                Navigator.pop(context);
+                showToast(
+                    message: 'Update Successfully', state: ToastStates.success);
+              } else if (state is DeleteTaskSuccessState) {
+                Navigator.pop(context);
+                showToast(
+                    message: 'Delete Successfully', state: ToastStates.success);
+              }
+            },
+            builder: (context, state) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  //date now
+                  Row(
+                    children: [
+                      Text(
+                        DateFormat.yMMMMd().format(DateTime.now()),
+                        style: Theme.of(context).textTheme.displayLarge,
                       ),
-                    ),
-            ],
+                      const Spacer(),
+                      IconButton(
+                        onPressed: () {
+                          BlocProvider.of<TaskCubit>(context).changeTheme();
+                        },
+                        icon: Icon(
+                          Icons.mode_night,
+                          color: BlocProvider.of<TaskCubit>(context).isDark
+                              ? AppColors.background
+                              : AppColors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 12.h,
+                  ),
+                  //today
+                  Text(
+                    AppStrings.today,
+                    style: Theme.of(context).textTheme.displayLarge,
+                  ),
+                  SizedBox(
+                    height: 6.h,
+                  ),
+                  //date picker
+                  DatePicker(
+                    DateTime.now(),
+                    initialSelectedDate: DateTime.now(),
+                    selectionColor: AppColors.primary,
+                    selectedTextColor: AppColors.white,
+                    dateTextStyle: Theme.of(context).textTheme.displayMedium!,
+                    monthTextStyle: Theme.of(context).textTheme.displayMedium!,
+                    dayTextStyle: Theme.of(context).textTheme.displayMedium!,
+                    height: 110,
+                    onDateChange: (date) {
+                      BlocProvider.of<TaskCubit>(context).getSelectedDate(date);
+                    },
+                  ),
+                  SizedBox(
+                    height: 50.h,
+                  ),
+                  //no tasks
+                  BlocProvider.of<TaskCubit>(context).tasksList.isEmpty
+                      ? NoTasksWidgets()
+                      : Expanded(
+                          child: ListView.builder(
+                            itemCount: BlocProvider.of<TaskCubit>(context)
+                                .tasksList
+                                .length,
+                            itemBuilder: (context, index) {
+                              return InkWell(
+                                onTap: () {
+                                  showModalBottomSheet(
+                                      context: context,
+                                      builder: (context) {
+                                        return Container(
+                                          padding: const EdgeInsets.all(24),
+                                          height: 250.h,
+                                          color: AppColors.deepGrey,
+                                          child: Column(
+                                            children: [
+                                              //taskCompleted
+                                              BlocProvider.of<TaskCubit>(
+                                                              context)
+                                                          .tasksList[index]
+                                                          .isCompleted ==
+                                                      0
+                                                  ? SizedBox(
+                                                      height: 48.h,
+                                                      width: double.infinity,
+                                                      child: CustomButton(
+                                                          onPressed: () {
+                                                            BlocProvider.of<
+                                                                        TaskCubit>(
+                                                                    context)
+                                                                .updateTasks(
+                                                              BlocProvider.of<
+                                                                          TaskCubit>(
+                                                                      context)
+                                                                  .tasksList[
+                                                                      index]
+                                                                  .id,
+                                                            );
+                                                          },
+                                                          text: AppStrings
+                                                              .taskCompleted),
+                                                    )
+                                                  : Container(),
+                                              SizedBox(
+                                                height: 24.h,
+                                              ),
+                                              //deleteTask
+                                              SizedBox(
+                                                height: 48.h,
+                                                width: double.infinity,
+                                                child: CustomButton(
+                                                    backgroundColor:
+                                                        AppColors.red,
+                                                    onPressed: () {
+                                                      BlocProvider.of<
+                                                                  TaskCubit>(
+                                                              context)
+                                                          .deleteTasks(BlocProvider
+                                                                  .of<TaskCubit>(
+                                                                      context)
+                                                              .tasksList[index]
+                                                              .id);
+                                                    },
+                                                    text:
+                                                        AppStrings.deleteTask),
+                                              ),
+                                              SizedBox(
+                                                height: 24.h,
+                                              ),
+
+                                              //cancel
+                                              SizedBox(
+                                                height: 48.h,
+                                                width: double.infinity,
+                                                child: CustomButton(
+                                                    onPressed: () {
+                                                      Navigator.pop(context);
+                                                    },
+                                                    text: AppStrings.cancel),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      });
+                                },
+                                child: TaskComponent(
+                                  taskModel: BlocProvider.of<TaskCubit>(context)
+                                      .tasksList[index],
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                ],
+              );
+            },
           ),
         ),
 
@@ -232,7 +298,9 @@ class TaskComponent extends StatelessWidget {
           RotatedBox(
             quarterTurns: 3,
             child: Text(
-              taskModel.isCompleted ? AppStrings.completed : AppStrings.todo,
+              taskModel.isCompleted == 1
+                  ? AppStrings.completed
+                  : AppStrings.todo,
               style: Theme.of(context).textTheme.displayMedium,
             ),
           ),
